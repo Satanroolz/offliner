@@ -1,0 +1,84 @@
+# Local stack: Postgres, Valkey (Redis-compatible), the Rails server and a
+# Sidekiq worker (which also runs the cron schedule in config/schedule.yml).
+#
+#   docker compose up --build
+#
+# The defaults below are for local use only. Override them with a .env file
+# (or real environment variables) for anything else.
+
+name: offliner
+
+x-app: &app
+  build: .
+  image: offliner
+  environment: &app-env
+    RAILS_ENV: production
+    SECRET_KEY_BASE: ${SECRET_KEY_BASE:-local-only-secret-key-base-change-me-before-sharing-this-stack-anywhere}
+    DATABASE_URL: postgres://offliner:${POSTGRES_PASSWORD:-offliner}@db:5432/offliner_production
+    REDIS_URL: redis://redis:6379/0
+    RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
+  depends_on: &app-depends
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: offliner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-offliner}
+      POSTGRES_DB: offliner_production
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U offliner -d offliner_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: valkey/valkey:8
+    command: ["valkey-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: creates/migrates the database before web and sidekiq start.
+  migrate:
+    <<: *app
+    command: ["./bin/rails", "db:prepare"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    <<: *app
+    command: ["./bin/rails", "server", "-b", "0.0.0.0"]
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  sidekiq:
+    <<: *app
+    command: ["bundle", "exec", "sidekiq"]
+    # Firefox needs more shared memory than the 64MB default
+    shm_size: 1gb
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:

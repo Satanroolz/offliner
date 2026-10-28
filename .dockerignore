@@ -1,0 +1,22 @@
+# Version control, editor and CI files
+/.git/
+/.github/
+/.ruby-lsp/
+
+# Local environment, secrets and keys
+/.env*
+/config/*.key
+
+# Logs, temp files, local storage and build output
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+/storage/*
+!/storage/.keep
+/public/assets
+/node_modules/
+
+# Dependencies installed by bundler on the host
+/.bundle
+/vendor/bundle

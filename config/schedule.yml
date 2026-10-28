@@ -1,0 +1,7 @@
+# Loaded by sidekiq-cron when the Sidekiq server starts. Times are UTC.
+scrape_player_count:
+  cron: "*/30 * * * *"
+  class: "ScrapePlayerCountJob"
+  args: ["us-main"]
+  queue: default
+  description: "Record the moose.gg US Main player count every 30 minutes"
