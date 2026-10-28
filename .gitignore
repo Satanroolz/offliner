@@ -36,3 +36,6 @@
 
 # Personal editor settings (e.g. local SQLTools connections)
 /.vscode/
+
+# Test coverage reports
+/coverage

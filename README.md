@@ -64,7 +64,7 @@ bin/rails "player_count:now[us-monthly]"   # either task takes an optional serve
 ## Tests and checks
 
 ```sh
-bundle exec rspec    # test suite
+bundle exec rspec    # test suite (writes a coverage report to coverage/index.html)
 bin/rubocop          # lint (Shopify Ruby style)
 bundle exec srb tc   # Sorbet type check
 bin/brakeman         # static security analysis
@@ -80,7 +80,7 @@ GitHub Actions runs the security scans, lint and tests on every pull request and
 
 ## Deployment
 
-The [Dockerfile](Dockerfile) builds a production image that includes Firefox and geckodriver. Run the same image twice:
+The [Dockerfile](Dockerfile) builds a production image that includes Firefox and geckodriver. Run the image as two containers, one for the web server and one for the Sidekiq worker:
 
 - web: the default command, serves Rails on port 3000
 - worker: `bundle exec sidekiq`

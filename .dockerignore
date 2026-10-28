@@ -20,3 +20,6 @@
 # Dependencies installed by bundler on the host
 /.bundle
 /vendor/bundle
+
+# Test coverage reports
+/coverage

@@ -30,6 +30,9 @@ group :development, :test do
   # Testing framework
   gem "rspec-rails", "~> 8.0"
 
+  # Test coverage reporting
+  gem "simplecov", require: false
+
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
 
