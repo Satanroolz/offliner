@@ -2,7 +2,7 @@
 
 Offliner records how many players are on the moose.gg "US Main" server over time. Every 30 minutes a background job reads the current player count, and stores it in Postgres.
 
-The project is in early development: data collection works end to end, but there are no endpoints for viewing the it yet. Rails runs in API-only mode (no views or asset pipeline), and a frontend service may be added in the future.
+The project is in early development: data collection works end to end and a scrape can be triggered through the API, but there are no endpoints for viewing the data yet. Rails runs in API-only mode (no views or asset pipeline), and a frontend service may be added in the future.
 
 ## How it works
 
@@ -11,7 +11,36 @@ The project is in early development: data collection works end to end, but there
 - `config/schedule.yml` runs the job for `us-main` with sidekiq-cron every 30 minutes (UTC). To track another server, add another entry with a different `args`. The schedule is loaded when the Sidekiq server starts.
 - `PlayerCount` stores `server` (the moose.gg server name, such as `us-main`), `count`, `started_at` and `ended_at` (the scrape window), plus the usual timestamps. `(server, started_at)` is indexed.
 
-The Rails app currently only exposes the health check at `/up`.
+The Rails app exposes the health check at `/up` and the scrape trigger described under [API](#api).
+
+## API
+
+All endpoints are under `/api/v1` and speak JSON. There is no authentication yet, so don't expose the app publicly as is.
+
+### `POST /api/v1/scrapes`
+
+Enqueues a `ScrapePlayerCountJob` and returns immediately. The scrape runs in the Sidekiq worker and can take up to 30 seconds, so the response only confirms the job was queued. A Sidekiq worker must be running for the job to be processed.
+
+Request body (optional):
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `server` | string | `us-main` | moose.gg server name. Lowercase letters, digits and hyphens only. |
+
+```sh
+curl -i -X POST http://localhost:3000/api/v1/scrapes \
+  -H 'Content-Type: application/json' \
+  -d '{"server": "us-main"}'
+```
+
+Responses:
+
+| Status | Body |
+| --- | --- |
+| `202 Accepted` | `{"job_id": "aa30866c795ae6fe77d010ca", "server": "us-main", "status": "enqueued"}` |
+| `422 Unprocessable Content` | `{"error": "server must be lowercase letters, digits and hyphens"}` |
+
+`job_id` is the Sidekiq job id (`jid`), which appears in the worker log. The stored result is not available through the API yet. To follow a job, watch the Sidekiq log for the `[ScrapePlayerCountJob]` line.
 
 ## Stack
 
@@ -97,7 +126,8 @@ Run `bin/rails db:prepare` before starting the services. Run only one Sidekiq pr
 
 ## Known limitations and next steps
 
-- No JSON endpoints yet for the collected data, and no frontend. Reading it from another origin will also need CORS configured (for example with `rack-cors`).
+- No JSON endpoint yet for reading the collected data, and no frontend. Reading it from another origin will also need CORS configured (for example with `rack-cors`).
+- The scrape trigger has no authentication or rate limiting, so anyone who can reach it can enqueue scrapes.
 - The scraper depends on the current moose.gg page markup (the `rm-section-title` "Players" card). A site redesign will break it, and the job will fail with `MoosePlayerCountScraper::ScrapeError`.
 - Only `us-main` is scheduled. Other servers work (the scraper builds the URL from the server name) but each needs its own schedule entry, and the page markup is assumed to match.
 - No alerting when scrapes fail repeatedly.
