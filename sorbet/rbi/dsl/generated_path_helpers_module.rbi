@@ -10,6 +10,9 @@ module GeneratedPathHelpersModule
   include ::ActionDispatch::Routing::PolymorphicRoutes
 
   sig { params(args: T.untyped).returns(String) }
+  def api_v1_scrapes_path(*args); end
+
+  sig { params(args: T.untyped).returns(String) }
   def rails_health_check_path(*args); end
 
   sig { params(args: T.untyped).returns(String) }
