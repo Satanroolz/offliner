@@ -39,3 +39,6 @@
 
 # Test coverage reports
 /coverage
+
+# Local Docker Compose overrides (e.g. publishing Postgres to the host)
+/compose.override.yaml
