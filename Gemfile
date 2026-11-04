@@ -18,7 +18,7 @@ gem "sidekiq", "~> 8.0"
 gem "sidekiq-cron", "~> 2.0"
 
 # Headless browser used to render the Blazor-based moose.gg pages
-gem "selenium-webdriver", "~> 4.0"
+gem "selenium-webdriver", "~> 4.52"
 
 # Runtime support for Sorbet type signatures
 gem "sorbet-runtime"
