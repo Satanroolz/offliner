@@ -12,7 +12,7 @@ gem "tzinfo-data", platforms: %i[windows jruby]
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
-gem "nokogiri", "~> 1.16"
+gem "nokogiri", "~> 1.19"
 gem "httparty", "~> 0.23"
 gem "sidekiq", "~> 8.0"
 gem "sidekiq-cron", "~> 2.0"
