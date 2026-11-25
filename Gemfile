@@ -13,7 +13,7 @@ gem "tzinfo-data", platforms: %i[windows jruby]
 gem "bootsnap", require: false
 
 gem "nokogiri", "~> 1.16"
-gem "httparty", "~> 0.23"
+gem "httparty", "~> 0.25"
 gem "sidekiq", "~> 8.0"
 gem "sidekiq-cron", "~> 2.0"
 
